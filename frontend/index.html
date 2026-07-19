@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AgriVox-Bariba - Assistant vocal agronomique intelligent en langue Baatonum (Bariba) utilisant l'IA générative et l'API OpenAI GPT-5.6 Sol.">
+    <title>AgriVox-Bariba - Assistant Vocal IA en Langue Nationale</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Lucide Icons CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+    <div class="glow-bg"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon"><i data-lucide="sprout"></i></div>
+                <div class="logo-text">
+                    <h1>AgriVox-Bariba</h1>
+                    <p>OpenAI Build Week 2026 Submission</p>
+                </div>
+            </div>
+            <div class="status-badge" id="apiStatusBadge">
+                <span class="status-dot green"></span>
+                <span id="statusLabel">Mode Simulation Actif</span>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Left Side: Control Panel -->
+            <section class="control-panel panel-glass">
+                <div class="panel-header">
+                    <h2>Console de Commande</h2>
+                    <p>Posez votre question en langue nationale Baatonum (Bariba)</p>
+                </div>
+
+                <!-- Input Selection -->
+                <div class="input-selection-group">
+                    <label class="section-label">Questions types à tester :</label>
+                    <div class="suggested-queries">
+                        <button class="query-btn" onclick="selectQuery('Nna nɛɛra gbi kpunu tɔcotoni mɛ ?', 'chenilles')">
+                            <i data-lucide="bug" class="btn-icon"></i> Chenilles sur le coton
+                        </button>
+                        <button class="query-btn" onclick="selectQuery('Maasi nɛɛra doke yàkuru mɛ ?', 'maas')">
+                            <i data-lucide="leaf" class="btn-icon"></i> Engrais sur le maïs
+                        </button>
+                        <button class="query-btn" onclick="selectQuery('Tɔcotoni doke yoko mɛ ?', 'yoko')">
+                            <i data-lucide="flower" class="btn-icon"></i> Engrais pour le coton
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Voice Recording Simulation -->
+                <div class="voice-input-area">
+                    <button class="mic-btn" id="micBtn" onclick="toggleRecording()" aria-label="Enregistrer une question vocale">
+                        <i data-lucide="mic" id="micIcon"></i>
+                    </button>
+                    <p class="voice-instruction" id="voiceInstruction">Cliquez sur le micro pour enregistrer votre voix en Baatonum...</p>
+                </div>
+
+                <!-- Manual Text Input -->
+                <div class="manual-input-area">
+                    <label for="textInput" class="section-label">Ou saisissez la transcription écrite :</label>
+                    <div class="input-row">
+                        <input type="text" id="textInput" placeholder="Ex: Nna nɛɛra gbi kpunu tɔcotoni mɛ ?" value="Nna nɛɛra gbi kpunu tɔcotoni mɛ ?">
+                        <button class="btn-primary" id="btnSubmit" onclick="processQuery()">Analyser</button>
+                    </div>
+                </div>
+
+                <!-- Mode Config -->
+                <div class="mode-config">
+                    <i data-lucide="settings" class="config-icon"></i>
+                    <span class="mode-title">Mode d'exécution :</span>
+                    <label class="switch">
+                        <input type="checkbox" id="mockModeToggle" onchange="toggleMockMode()" checked>
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="mode-label" id="mockModeLabel">Simulation locale (sans clé API)</span>
+                </div>
+            </section>
+
+            <!-- Right Side: Pipeline Output visualizer -->
+            <section class="output-panel panel-glass">
+                <div class="panel-header">
+                    <h2>Pipeline de Traitement IA</h2>
+                    <p>Visualisation des étapes d'analyse de GPT-5.6 Sol</p>
+                </div>
+
+                <div class="pipeline-flow">
+                    <!-- Step 1: ASR & Glossary -->
+                    <div class="step-card" id="step1">
+                        <div class="step-badge-row">
+                            <span class="step-num">01</span>
+                            <i data-lucide="book-open" class="step-icon"></i>
+                            <span class="step-name">ASR & Dictionnaire Contextuel</span>
+                        </div>
+                        <div class="step-body">
+                            <p class="asr-text-line"><strong>Entrée transcrite :</strong> <span id="pipelineAsrText">-</span></p>
+                            
+                            <div class="glossary-box">
+                                <span class="glossary-header">🔍 Glossaire extrait du dictionnaire (Context Caching) :</span>
+                                <div class="glossary-tags" id="glossaryTags">
+                                    <span class="glossary-placeholder">Aucun mot analysé</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Translation & Reasoning -->
+                    <div class="step-card" id="step2">
+                        <div class="step-badge-row">
+                            <span class="step-num">02</span>
+                            <i data-lucide="brain" class="step-icon"></i>
+                            <span class="step-name">Traduction & Raisonnement GPT-5.6 Sol</span>
+                        </div>
+                        <div class="step-body">
+                            <div class="translation-line">
+                                <strong>Traduction française :</strong>
+                                <p class="translated-text" id="pipelineTranslation">-</p>
+                            </div>
+                            <div class="reasoning-box">
+                                <span class="reasoning-header">🧠 Analyse agronomique & Recommandation :</span>
+                                <div class="reasoning-content" id="pipelineDiagnosis">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Tool calling & computation -->
+                    <div class="step-card" id="step3">
+                        <div class="step-badge-row">
+                            <span class="step-num">03</span>
+                            <i data-lucide="calculator" class="step-icon"></i>
+                            <span class="step-name">Programmatic Tool Calling (Outil de Dosage)</span>
+                        </div>
+                        <div class="step-body">
+                            <div class="tool-not-needed" id="toolNotNeededText">En attente d'un diagnostic nécessitant un dosage.</div>
+                            
+                            <div class="tool-content" id="toolContent" style="display: none;">
+                                <div class="tool-header-row">
+                                    <span class="tool-tag">Outil Actif : calculate_dosage()</span>
+                                </div>
+                                <div class="tool-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="calcSurface">Superficie :</label>
+                                            <input type="number" id="calcSurface" value="2" min="0.1" step="0.1" onchange="runToolCall()">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="calcUnit">Unité :</label>
+                                            <select id="calcUnit" onchange="runToolCall()">
+                                                <option value="hectares">Hectares (ha)</option>
+                                                <option value="cordes">Cordes (unité locale)</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="calcTreatment">Type de traitement :</label>
+                                            <select id="calcTreatment" onchange="runToolCall()">
+                                                <option value="pesticide">Pesticide / Traitement</option>
+                                                <option value="engrais">Fertilisation / Engrais</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button class="btn-secondary" onclick="runToolCall()">Lancer le calcul sécurisé</button>
+                                </div>
+
+                                <div class="tool-result-box" id="toolResult">
+                                    En attente de calcul...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Speech Synthesis -->
+                    <div class="step-card" id="step4">
+                        <div class="step-badge-row">
+                            <span class="step-num">04</span>
+                            <i data-lucide="volume-2" class="step-icon"></i>
+                            <span class="step-name">TTS & Synthèse Vocale (Tons Physiques)</span>
+                        </div>
+                        <div class="step-body flex-row">
+                            <div class="tts-wave-area">
+                                <div class="sound-wave" id="soundWave">
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                </div>
+                            </div>
+                            <div class="tts-meta">
+                                <p class="tts-instruction">Réponse vocale générée pour l'agriculteur.</p>
+                                <span class="tts-model-info">Modèle VITS multi-locuteur entraîné sur base de parole Baatonum.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script>
+        // Initialisation initiale des icônes Lucide
+        lucide.createIcons();
+    </script>
+</body>
+</html>
