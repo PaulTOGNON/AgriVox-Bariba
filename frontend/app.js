@@ -224,6 +224,16 @@ async function processQuery() {
         const step4 = document.getElementById("step4");
         step4.classList.add("active");
         
+        // Activer la synthèse vocale réelle du navigateur (Gratuit et hors-ligne)
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Stopper toute lecture en cours
+            const speechText = `La traduction en français est : "${transData.translated_text}". Le diagnostic recommande : ${currentCrop === 'coton' ? "un traitement contre les chenilles de la capsule." : "la fertilisation du maïs."} Le calcul de dosage sécurisé a été mis à jour.`;
+            const utterance = new SpeechSynthesisUtterance(speechText);
+            utterance.lang = 'fr-FR';
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+        
     } catch (error) {
         console.error(error);
         alert("Une erreur s'est produite lors de la communication avec le serveur.");
