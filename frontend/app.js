@@ -58,18 +58,28 @@ function updateStatusBadge() {
 }
 
 // Sélection d'une question type
-function selectQuery(text, key) {
+function selectQuery(btn, text) {
     document.getElementById("textInput").value = text;
     
     // Mettre en valeur le bouton sélectionné
-    const buttons = document.querySelectorAll(".query-btn");
-    buttons.forEach(btn => {
-        if (btn.innerText.includes(text.substring(0, 10))) {
-            btn.classList.add("selected");
-        } else {
-            btn.classList.remove("selected");
-        }
+    document.querySelectorAll(".query-btn").forEach(b => {
+        b.classList.remove("selected");
     });
+    
+    if (btn) {
+        // Gérer le clic direct ou le clic sur l'icône à l'intérieur
+        const queryBtn = btn.closest ? btn.closest(".query-btn") : btn;
+        if (queryBtn && queryBtn.classList) {
+            queryBtn.classList.add("selected");
+        }
+    }
+    
+    // Pré-remplir currentCrop et currentTreatment pour assurer la cohérence instantanée
+    const info = queriesInfo[text];
+    if (info) {
+        currentCrop = info.crop;
+        currentTreatment = info.treatment;
+    }
     
     resetPipeline();
 }
@@ -128,6 +138,24 @@ async function processQuery() {
     }
     
     resetPipeline();
+    
+    // Mettre à jour la surbrillance si la requête correspond ou pas
+    document.querySelectorAll(".query-btn").forEach(b => {
+        b.classList.remove("selected");
+    });
+    const info = queriesInfo[textInput];
+    if (info) {
+        currentCrop = info.crop;
+        currentTreatment = info.treatment;
+        
+        // Retrouver le bouton correspondant et lui ajouter la classe 'selected'
+        const buttons = document.querySelectorAll(".query-btn");
+        buttons.forEach(btn => {
+            if (btn.innerText.includes(info.crop === "coton" ? (info.treatment === "pesticide" ? "Chenilles" : "Engrais pour le coton") : "maïs")) {
+                btn.classList.add("selected");
+            }
+        });
+    }
     const btnSubmit = document.getElementById("btnSubmit");
     btnSubmit.disabled = true;
     btnSubmit.innerText = "Analyse...";

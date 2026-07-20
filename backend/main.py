@@ -326,7 +326,8 @@ async def calculate_dosage(request: CalculationRequest):
         
     surface_ha = round(surface_ha, 4)
     
-    if request.crop.lower() == "coton":
+    crop_name = (request.crop or "coton").strip().lower()
+    if crop_name == "coton":
         if request.treatment_type == "pesticide":
             product = f"{round(surface_ha * 1.0, 2)} Litre(s) d'insecticide (ex: Decis à 1L/ha)"
             water = f"{round(surface_ha * 120.0, 2)} Litres d'eau"
